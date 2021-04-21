@@ -1,0 +1,62 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - {{ .Chart.Name }}-gateway
+  http:
+  - name: "index"
+    match:
+    - uri:
+        exact: /index.html
+    - uri:
+        exact: /
+    route:
+    - destination:
+        host: {{ .Chart.Name }}
+        port:
+          number: 80
+  - name: "csvsample"
+    match:
+    - uri:
+        exact: /vmchooser.csv
+    route:
+    - destination:
+        host: {{ .Chart.Name }}
+        port:
+          number: 80
+  - name: "static"
+    match:
+    - uri:
+        prefix: /static/
+    route:
+    - destination:
+        host: {{ .Chart.Name }}
+        port:
+          number: 80
+  - name: "deeplinks"
+    match:
+    - uri:
+        prefix: /vmchooser
+    - uri:
+        prefix: /diskchooser
+    - uri:
+        prefix: /bulkuploader
+    - uri:
+        prefix: /backupchooser
+    - uri:
+        prefix: /vmoptimizer
+    - uri:
+        prefix: /sqlchooser
+    - uri:
+        prefix: /cloudsimple
+    rewrite:
+      uri: "/"
+    route:
+    - destination:
+        host: {{ .Chart.Name }}
+        port:
+          number: 80

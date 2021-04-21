@@ -1,0 +1,108 @@
+name: 3.0.$(Build.BuildId)
+resources:
+  repositories:
+  - repository: vmchooserfrontendv3
+    type: github
+    name: vmchooser/azure-vmchooser-frontend-v3
+    endpoint: vmchooser
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+stages:
+- stage: BuildStaticWebsite
+  displayName: BuildStaticWebsite
+  jobs:
+  - job: BuildStaticWebsite
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: SonarCloudPrepare@1
+      inputs:
+        SonarCloud: '$(sonarCloudEndpointName)'
+        organization: '$(sonarCloudOrganization)'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: '$(sonarCloudProjectKey)'
+        cliProjectName: '$(sonarCloudProjectName)'
+        cliProjectVersion: '1.0'
+        cliSources: 'src'
+    - bash: |
+        npm install
+        npm run build
+      displayName: Build Preview
+    - task: SonarCloudAnalyze@1
+    - task: SonarCloudPublish@1
+      inputs:
+        pollingTimeoutSec: '300'
+    - task: ArchiveFiles@2
+      displayName: "Archive files"
+      inputs:
+        rootFolderOrFile: ./dist
+        includeRootFolder: false
+        archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+        ArtifactName: 'vmchooserfrontendpreview'
+    - bash: |
+        cp ./src/config/prod/index.js ./src/config/index.js
+        npm run build
+      displayName: Build Production
+    - task: ArchiveFiles@2
+      displayName: "Archive files"
+      inputs:
+        rootFolderOrFile: ./dist
+        includeRootFolder: false
+        archiveFile: "$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip"
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/build$(Build.BuildId).zip'
+        ArtifactName: 'vmchooserfrontend'
+- stage: DeployDev
+  displayName: Deploy to Dev
+  jobs: 
+    - deployment: DeployDev
+      variables:
+      - group: vmchooser
+      - group: vmchooserdev
+      environment: 'vmchooserdev'
+      strategy: 
+        runOnce:
+          deploy:          
+            pool: 
+              vmImage: 'ubuntu-latest'
+            steps:
+            - download: current
+              artifact: vmchooserfrontendpreview
+            - task: AzureRmWebAppDeployment@4
+              inputs:
+                connectionType: 'AzureRM'
+                azureSubscription: 'vmchooser.arm'
+                appType: 'webApp'
+                webAppName: 'vmchooser-dev-webapp-fe'
+                Package: $(Agent.BuildDirectory)/**/*.zip
+- stage: DeployPrd
+  displayName: Deploy to Prd
+  jobs: 
+    - deployment: DeployPrd
+      variables:
+      - group: vmchooser
+      - group: vmchooserdev
+      environment: 'vmchooserprd'
+      strategy: 
+        runOnce:
+          deploy:          
+            pool: 
+              vmImage: 'ubuntu-latest'
+            steps:
+            - download: current
+              artifact: vmchooserfrontend
+            - task: AzureRmWebAppDeployment@4
+              inputs:
+                connectionType: 'AzureRM'
+                azureSubscription: 'vmchooser.arm'
+                appType: 'webApp'
+                webAppName: 'vmchooser-prd-webapp-fe'
+                Package: $(Agent.BuildDirectory)/**/*.zip

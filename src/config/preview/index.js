@@ -1,0 +1,21 @@
+export default {
+  serverURI: '',
+  apiGetVmSize: 'https://be-dev.vmchooser.com/api/GetVmSize',
+  apiGetVmSizes: 'https://be-dev.vmchooser.com/api/GetVmSizes',
+  apiGetRegions: 'https://be-dev.vmchooser.com/api/GetRegions',
+  apiGetVmDetail: 'https://be-dev.vmchooser.com/api/GetVmDetail',
+  apiCalcVmOptimizations: 'https://be-dev.vmchooser.com/api/CalcVmOptimizations',
+  apiGetDiskConfig: 'https://be-dev.vmchooser.com/api/GetDiskConfig',
+  apiGetSqlService: 'https://be-dev.vmchooser.com/api/GetSqlService',
+  apiGetSqlServiceStorage: 'https://be-dev.vmchooser.com/api/GetSqlServiceStorage',
+  apiGetBackup: 'https://be-dev.vmchooser.com/api/GetBackup',
+  apiGetCloudSimple: 'https://be-dev.vmchooser.com/api/GetCloudSimple',
+  apiGetAroWorkers: 'https://be-dev.vmchooser.com/api/GetAroWorkers',
+  apiKey: '',
+  fixedLayout: false,
+  hideLogoOnMobile: false,
+  clientId: 'f4b67345-011d-4b77-b746-05e152a61812',
+  redirectUri: 'https://www.vmchooser.com/',
+  tenant: 'common',
+  appinsightsid: '15aa612c-5481-43b2-98a9-0596a63d9e6f'
+}

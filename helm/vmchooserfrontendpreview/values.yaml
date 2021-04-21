@@ -1,0 +1,5 @@
+replicaCount: 1
+appVersion: preview-#{Build.BuildId}#
+image:
+  repository: vmchooserregistry.azurecr.io/vmchooser/frontendv3
+  pullPolicy: IfNotPresent
